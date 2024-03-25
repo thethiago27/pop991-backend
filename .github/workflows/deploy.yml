@@ -1,11 +1,9 @@
 name: Update Function Code
 
 on:
-  workflow_call:
-    inputs:
-      environment:
-        required: true
-        type: string
+  push:
+    branches:
+      - master
 
 jobs:
   get-filenames:
