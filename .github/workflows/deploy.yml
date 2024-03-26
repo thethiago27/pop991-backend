@@ -23,7 +23,7 @@ jobs:
     needs: get-filenames
     strategy:
       matrix:
-        lambda: ${{ steps.lambda_functions.outputs.lambda_functions }}
+        lambda: [$GITHUB_OUTPUT]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
