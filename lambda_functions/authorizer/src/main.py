@@ -1,29 +1,34 @@
+import os
+import jwt
+
+
 def lambda_handler(event, context):
-    response = {
-        "isAuthorized": False,
-        "context": {
-            "stringKey": "value",
-            "numberKey": 1,
-            "booleanKey": True,
-        }
-    }
+    authorization_header = event['headers'].get('Authorization')
 
     try:
-        token = event['headers']['Authorization']
+        if authorization_header and authorization_header.startswith('Bearer '):
+            token = authorization_header.split(' ')[1]
+            decoded_token = jwt.decode(token, os.getenv('jwt_secret'), algorithms=['HS256'])
 
-        if not token:
-            return response
+            if 'username' in decoded_token:
+                raise generate_policy(decoded_token['user_id'], 'Allow', event['methodArn'])
+            else:
+                raise generate_policy(decoded_token['user_id', 'Deny', event['methodArn'])
+    except jwt.ExpiredSignatureError:
+        raise Exception('Token JWT expirado')
+    except jwt.InvalidTokenError:
+        raise Exception('Token JWT inválido')
 
-        response = {
-            "isAuthorized": True,
-            "context": {
-                "stringKey": "value",
-                "numberKey": 1,
-                "booleanKey": True,
-                "arrayKey": ["user_id", "1234"],
-                "mapKey": {"user_id": "1234"}
-            }
+
+def generate_policy(principal_id, effect, resource):
+    return {
+        'principalId': principal_id,
+        'policyDocument': {
+            'Version': '2012-10-17',
+            'Statement': [{
+                'Action': 'execute-api:Invoke',
+                'Effect': effect,
+                'Resource': resource
+            }]
         }
-    except BaseException:
-        print("No token provided")
-        return response
+    }
