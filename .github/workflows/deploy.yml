@@ -21,7 +21,7 @@ jobs:
     needs: get-filenames
     strategy:
       matrix:
-        lambda: ${{fromJson(steps.lambda_functions.outputs.lambda_functions)}}
+        lambda: ${{fromJson( ${{ steps.lambda_functions.outputs.lambda_functions }} )}}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
