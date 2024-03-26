@@ -17,7 +17,7 @@ jobs:
         id: lambda_functions
         run: |
           directories=$(tree lambda_functions -d -L 1 -J | jq -j -c '.[0].contents | map(.name)')
-          echo ::set-output name=lambdas::${lambdas}
+          echo ::set-output name=lambdas::${directories}
 
   update-code:
     needs: get-filenames
