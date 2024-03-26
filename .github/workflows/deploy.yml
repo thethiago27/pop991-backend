@@ -15,8 +15,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Get functions filenames
         id: lambda_functions
-        run: |
-          lambdas=$(find lambda-functions -mindepth 1 -maxdepth 1 -type d)
+        run: lambdas=$(ls -1 | sed 's/\.py//')
       - name: Set output name
         run: echo "{lambda_functions}= $lambdas" >> $GITHUB_OUTPUT
 
