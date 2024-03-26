@@ -14,16 +14,14 @@ jobs:
       - name: Get functions filenames
         id: lambda_functions
         run: |
-          directories=$(find lambda_functions -mindepth 1 -maxdepth 1 -type d)
-          names=$(echo $directories | tr ' ' '\n' | sed 's/lambda_functions\///g' | tr '\n' ',')
-          echo "lambda_functions=$names" >> "$GITHUB_OUTPUT"
-          printf "Found functions: $names"
+          directories=$(tree -d -L 1 -J . | jq -j -c '.[0].contents | map(.name)')
+          echo "lambda_functions=$directories" >> "$GITHUB_OUTPUT"
 
   update-code:
     needs: get-filenames
     strategy:
       matrix:
-        lambda: ${{ GITHUB_OUTPUT }}
+        lambda: ${{ fromJson(needs.get-filenames.outputs.lambda_functions) }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
