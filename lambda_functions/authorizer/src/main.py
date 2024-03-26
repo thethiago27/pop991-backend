@@ -1,4 +1,5 @@
 import os
+
 import jwt
 
 
@@ -13,11 +14,11 @@ def lambda_handler(event, context):
             if 'username' in decoded_token:
                 raise generate_policy(decoded_token['user_id'], 'Allow', event['methodArn'])
             else:
-                raise generate_policy(decoded_token['user_id', 'Deny', event['methodArn'])
+                raise generate_policy(decoded_token['user_id'], 'Deny', event['methodArn'])
     except jwt.ExpiredSignatureError:
-        raise Exception('Token JWT expirado')
+        raise generate_policy("", 'Deny', event['methodArn'])
     except jwt.InvalidTokenError:
-        raise Exception('Token JWT inválido')
+        raise generate_policy("", 'Deny', event['methodArn'])
 
 
 def generate_policy(principal_id, effect, resource):
