@@ -8,22 +8,20 @@ on:
 jobs:
   get-filenames:
     runs-on: ubuntu-latest
-    outputs:
-      lambda_functions: ${{ steps.getLambdas.outputs.lambdas }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: Get functions filenames
         id: lambda_functions
-        run: lambdas=$(ls -1 | sed 's/\.py//')
-      - name: Set output name
-        run: echo "{lambda_functions}= $lambdas" >> $GITHUB_OUTPUT
+        run: |
+          directories=$(find lambda-functions -mindepth 1 -maxdepth 1 -type d)
+          echo "{lambda_functions}={$directories}" >> $GITHUB_OUTPUT
 
   update-code:
     needs: get-filenames
     strategy:
       matrix:
-        lambda: ${{fromJson(needs.get-filenames.outputs.lambda_functions)}}
+        lambda: ${{fromJson(steps.lambda_functions.outputs.lambda_functions)}}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
