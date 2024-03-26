@@ -40,7 +40,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Zip Lambda functions
-        run: zip -j ${{matrix.lambda}}.zip ./lambda_functions/${{matrix.lambda}}/*
+        run: zip -j ${{matrix.lambda}}.zip ./${{matrix.lambda}}/*
 
       - name: Set up AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
