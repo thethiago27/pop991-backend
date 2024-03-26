@@ -8,11 +8,6 @@ def lambda_handler(event, context):
         }
     }
 
-    if event['path'] == "/login":
-        response["isAuthorized"] = True
-
-        return response
-
     try:
         token = event['headers']['Authorization']
 
@@ -26,7 +21,7 @@ def lambda_handler(event, context):
                     "stringKey": "value",
                     "numberKey": 1,
                     "booleanKey": True,
-                    "arrayKey": ["value1", "value2"],
+                    "arrayKey": ["user_id", "1234"],
                     "mapKey": {"user_id": "1234"}
                 }
             }
