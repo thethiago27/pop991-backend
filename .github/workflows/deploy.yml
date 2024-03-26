@@ -8,13 +8,15 @@ on:
 jobs:
   get-filenames:
     runs-on: ubuntu-latest
+    outputs:
+      lambdaArray: ${{ steps.lambda_functions.outputs.lambdas }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: Get functions filenames
         id: lambda_functions
         run: |
-          directories=$(tree -d -L 1 -J . | jq -j -c '.[0].contents | map(.name)')
+          directories=$(tree lambda_functions -d -L 1 -J | jq -j -c '.[0].contents | map(.name)')
           echo "lambda_functions=$directories" >> "$GITHUB_OUTPUT"
           printf "Found the following lambda functions: $directories"
 
@@ -22,7 +24,7 @@ jobs:
     needs: get-filenames
     strategy:
       matrix:
-        lambda: ${{ fromJson(needs.get-filenames.outputs.lambda_functions) }}
+        lambda: ${{ fromJson(needs.get-filenames.outputs.lambdaArray) }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
