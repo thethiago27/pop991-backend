@@ -16,6 +16,7 @@ jobs:
         run: |
           directories=$(tree -d -L 1 -J . | jq -j -c '.[0].contents | map(.name)')
           echo "lambda_functions=$directories" >> "$GITHUB_OUTPUT"
+          printf "Found the following lambda functions: $directories"
 
   update-code:
     needs: get-filenames
