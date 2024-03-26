@@ -9,22 +9,22 @@ jobs:
   get-filenames:
     runs-on: ubuntu-latest
     outputs:
-      lambdaArray: ${{ steps.getLambdas.outputs.lambdas }}
+      lambda_functions: ${{ steps.getLambdas.outputs.lambdas }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: Get functions filenames
-        id: getLambdas
+        id: lambda_functions
         run: |
           lambdas=$(find lambda-functions -mindepth 1 -maxdepth 1 -type d)
-          echo ::set-output name=lambdas::${lambdas}
-          printf -v lambdasArray "%s\n" $lambdas
+      - name: Set output name
+        run: echo "{lambda_functions}= $lambdas" >> $GITHUB_OUTPUT
 
   update-code:
     needs: get-filenames
     strategy:
       matrix:
-        lambda: ${{ fromJSON(needs.get-filenames.outputs.lambdaArray) }}
+        lambda: ${{fromJson(needs.get-filenames.outputs.lambda_functions)}}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
