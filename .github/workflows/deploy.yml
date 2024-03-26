@@ -15,8 +15,8 @@ jobs:
         id: lambda_functions
         run: |
           directories=$(find lambda_functions -mindepth 1 -maxdepth 1 -type d)
-          directories=$(echo $directories | tr ' ' '\n' | sed 's/lambda_functions\///g' | tr '\n' ',')
-          echo "lambda_functions=$directories" >> "$GITHUB_OUTPUT"
+          names=$(echo $directories | tr ' ' '\n' | sed 's/lambda_functions\///g' | tr '\n' ',')
+          echo "lambda_functions=$names" >> "$GITHUB_OUTPUT"
 
   update-code:
     needs: get-filenames
