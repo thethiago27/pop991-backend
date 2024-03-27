@@ -7,29 +7,28 @@ from botocore.exceptions import ClientError
 
 
 def lambda_handler(event, context):
-    email = event['email']
-    password = event['password']
+    event = json.loads(event['body'])
 
     try:
         dynamodb = boto3.resource('dynamodb')
         table = dynamodb.Table('users_auth')
-        response = table.get_item(Key={'email': email})
+        response = table.get_item(Key={'email': event['email']})
 
         if 'Item' not in response:
             return {
                 'statusCode': 401,
                 'body': json.dumps({
-                    'message': 'User not found'
+                    'message': 'Email or password invalid'
                 })
             }
 
         user = response['Item']
 
-        if user['password'] != password:
+        if user['password'] != event['password']:
             return {
                 'statusCode': 401,
                 'body': json.dumps({
-                    'message': 'Invalid password'
+                    'message': 'Email or password invalid'
                 })
             }
 
