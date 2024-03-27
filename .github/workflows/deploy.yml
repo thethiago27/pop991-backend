@@ -33,15 +33,12 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.9'
+          cache: 'pip'
 
-      - name: Install Python dependencies
+      - name: Zip And Install Lambda functions
         run: |
           cd lambda_functions/${{matrix.lambda}}
           pip install -r requirements.txt
-
-      - name: Zip Lambda functions
-        run: |
-          cd lambda_functions/${{matrix.lambda}}
           zip -r ${{matrix.lambda}}.zip .
 
       - name: Set up AWS Credentials
