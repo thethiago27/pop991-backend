@@ -12,7 +12,7 @@ def lambda_handler(event, context):
 
     try:
         dynamodb = boto3.resource('dynamodb')
-        table = dynamodb.Table('users')
+        table = dynamodb.Table('users_auth')
         response = table.get_item(Key={'email': email})
 
         if 'Item' not in response:
