@@ -3,7 +3,7 @@ import jwt
 
 
 def lambda_handler(event, context):
-    authorization_header = event['headers'].get('authorization')
+    authorization_header = event['headers'].get('Authorization')
 
     response = {
         "isAuthorized": False,
