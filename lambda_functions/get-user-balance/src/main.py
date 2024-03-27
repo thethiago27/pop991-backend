@@ -3,7 +3,7 @@ import boto3
 
 def lambda_handler(event, context):
     dynamodb = boto3.resource('dynamodb')
-    table = dynamodb.Table('user_balance')
+    table = dynamodb.Table('balance')
     response = table.get_item(Key={'user_id': event['user_id']})
     item = response.get('Item')
     if item:
