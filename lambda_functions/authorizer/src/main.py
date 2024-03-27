@@ -3,38 +3,41 @@ import jwt
 
 
 def lambda_handler(event, context):
+    if 'Authorization' not in event['headers']:
+        return generate_policy('user', 'Deny', event['methodArn'])
+
     authorization_header = event['headers']['Authorization']
+    token = None
 
-    response = {
-        "isAuthorized": False,
-        "context": {
-            "stringKey": "value",
-            "numberKey": 1,
-            "booleanKey": True,
-            "arrayKey": ["value1", "value2"],
-            "mapKey": {"value1": "value2"}
-        }
-    }
+    if authorization_header.startswith('Bearer '):
+        token = authorization_header.split(' ')[1]
 
-    if not authorization_header:
-        return response
-
-    token = authorization_header.split(' ')[1]
+    if not token:
+        return generate_policy('user', 'Deny', event['methodArn'])
 
     try:
         is_authorized = jwt.decode(token, os.getenv('jwt_secret'), algorithms=['HS256'])
 
         if 'user_id' in is_authorized:
-            response['isAuthorized'] = True
-            response['context']['user_id'] = is_authorized['user_id']
+            return generate_policy(is_authorized['user_id'], 'Allow', event['methodArn'])
         else:
-            response['isAuthorized'] = False
-        return response
+            return generate_policy('user', 'Deny', event['methodArn'])
 
-    except jwt.ExpiredSignatureError:
-        is_authorized = False
-        return response
-    except jwt.InvalidTokenError:
-        is_authorized = False
-        return response
+    except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
+        return generate_policy('user', 'Deny', event['methodArn'])
 
+
+def generate_policy(principal_id, effect, method_arn):
+    policy = {
+        'principalId': principal_id,
+        'policyDocument': {
+            'Version': '2012-10-17',
+            'Statement': [{
+                'Action': 'execute-api:Invoke',
+                'Effect': effect,
+                'Resource': method_arn
+            }]
+        }
+    }
+
+    return policy

@@ -50,4 +50,3 @@ def lambda_handler(event, context):
             'statusCode': 500,
             'body': json.dumps({'error': 'Erro ao acessar o DynamoDB: {}'.format(e.response['Error']['Message'])})
         }
-
