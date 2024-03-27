@@ -38,7 +38,7 @@ jobs:
       - name: Zip And Install Lambda functions
         run: |
           cd lambda_functions/${{matrix.lambda}}
-          pip install -r requirements.txt
+          pip install -r requirements.txt -t .
           zip -r ${{matrix.lambda}}.zip .
 
       - name: Set up AWS Credentials
