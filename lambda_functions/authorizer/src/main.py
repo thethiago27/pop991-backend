@@ -3,32 +3,38 @@ import jwt
 
 
 def lambda_handler(event, context):
-    authorization_header = event['headers'].get('Authorization')
+    authorization_header = event['headers'].get('authorization')
 
-    try:
-        if authorization_header and authorization_header.startswith('Bearer '):
-            token = authorization_header.split(' ')[1]
-            decoded_token = jwt.decode(token, os.getenv('jwt_secret'), algorithms=['HS256'])
-
-            if 'username' in decoded_token:
-                raise generate_policy(decoded_token['user_id'], 'Allow', event['methodArn'])
-            else:
-                raise generate_policy(decoded_token['user_id'], 'Deny', event['methodArn'])
-    except jwt.ExpiredSignatureError:
-        raise generate_policy("", 'Deny', event['methodArn'])
-    except jwt.InvalidTokenError:
-        raise generate_policy("", 'Deny', event['methodArn'])
-
-
-def generate_policy(principal_id, effect, resource):
-    return {
-        'principalId': principal_id,
-        'policyDocument': {
-            'Version': '2012-10-17',
-            'Statement': [{
-                'Action': 'execute-api:Invoke',
-                'Effect': effect,
-                'Resource': resource
-            }]
+    response = {
+        "isAuthorized": False,
+        "context": {
+            "stringKey": "value",
+            "numberKey": 1,
+            "booleanKey": True,
+            "arrayKey": ["value1", "value2"],
+            "mapKey": {"value1": "value2"}
         }
     }
+
+    if not authorization_header:
+        return response
+
+    token = authorization_header.split(' ')[1]
+
+    try:
+        is_authorized = jwt.decode(token, os.getenv('jwt_secret'), algorithms=['HS256'])
+
+        if 'user_id' in is_authorized:
+            response['isAuthorized'] = True
+            response['context']['user_id'] = is_authorized['user_id']
+        else:
+            response['isAuthorized'] = False
+        return response
+
+    except jwt.ExpiredSignatureError:
+        is_authorized = False
+        return response
+    except jwt.InvalidTokenError:
+        is_authorized = False
+        return response
+
