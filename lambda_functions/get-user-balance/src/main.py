@@ -9,7 +9,7 @@ def lambda_handler(event, context):
 
     print(context)
 
-    principal_id = event.get('requestContext').get('authorizer').get('principalId')
+    principal_id = event["principalId"]
     table = dynamodb.Table('balance')
     response = table.get_item(Key={'user_id': principal_id})
     item = response.get('Item')
