@@ -4,8 +4,11 @@ import boto3
 
 
 def lambda_handler(event, context):
-    print(event)
+
     dynamodb = boto3.resource('dynamodb')
+
+    table = dynamodb.Table('log')
+    table.put_item(Item=event)
 
     principal_id = event.get('requestContext').get('authorizer').get('principalId')
     table = dynamodb.Table('balance')
