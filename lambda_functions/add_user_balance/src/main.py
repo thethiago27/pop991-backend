@@ -43,25 +43,23 @@ def lambda_handler(event, context):
 
 def deposit_balance(user_id, amount):
     logger.info(f"Depositing {amount} to user {user_id}")
-    response = balance_table.update_item(
+    balance_table.update_item(
         Key={'user_id': user_id},
         UpdateExpression='SET balance = balance + :val',
         ExpressionAttributeValues={':val': amount}
     )
     logger.info("Balance updated successfully")
-    return response['Attributes']
 
 
 def update_invoice_status(invoice_id):
     logger.info(f"Updating status of invoice {invoice_id}")
-    response = invoices_table.update_item(
+    invoices_table.update_item(
         Key={'invoice_id': invoice_id},
         UpdateExpression='SET #status = :status',
         ExpressionAttributeNames={'#status': 'status'},
         ExpressionAttributeValues={':status': 'finished'}
     )
     logger.info("Invoice status updated successfully")
-    return response['Attributes']
 
 
 def get_invoice(invoice_id):
