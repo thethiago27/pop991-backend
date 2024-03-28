@@ -10,7 +10,7 @@ def lambda_handler(event, context):
     table = dynamodb.Table('log')
     table.put_item(Item={
         'event': event,
-        'context': context,
+        'context': json.dumps(context),
         'event_id': 'get-user-balance-2'
     })
 
