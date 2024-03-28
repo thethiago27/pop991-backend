@@ -7,12 +7,7 @@ def lambda_handler(event, context):
 
     dynamodb = boto3.resource('dynamodb')
 
-    table = dynamodb.Table('log')
-    table.put_item(Item={
-        'event': event,
-        'context': json.dumps(context),
-        'event_id': 'get-user-balance-2'
-    })
+    print(context)
 
     principal_id = event.get('requestContext').get('authorizer').get('principalId')
     table = dynamodb.Table('balance')
