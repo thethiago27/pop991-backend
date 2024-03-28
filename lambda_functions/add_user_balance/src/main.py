@@ -12,7 +12,7 @@ invoices_table = dynamodb.Table('invoices')
 
 def lambda_handler(event, context):
     try:
-        invoice_id = event.get('invoice_id')
+        invoice_id = event["Records"][0]["Sns"]["MessageAttributes"]["invoice_id"]["Value"]
 
         invoice = get_invoice(invoice_id)
         status = invoice.get('status')
