@@ -7,7 +7,7 @@ import requests
 def lambda_handler(event, context):
     amount = event.get('amount')
     qr_code_id, qr_code_payload = create_pix_code(amount)
-    save_invoice(amount, qr_code_id, qr_code_payload, event.get('user_id'))
+    save_invoice(amount, qr_code_id, qr_code_payload, event["principalId"])
 
     return {
         'qr_code_id': qr_code_id,
@@ -20,11 +20,13 @@ def save_invoice(amount, qr_code_id, qr_code_payload, user_id):
     table = dynamodb.Table('invoices')
 
     item = {
+        'invoice_id': qr_code_id,
         'user_id': user_id,
         'amount': amount,
         'qr_code_id': qr_code_id,
         'qr_code_payload': qr_code_payload,
-        'status': 'pending'
+        'status': 'pending',
+        'created_at': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     }
 
     table.put_item(Item=item)
