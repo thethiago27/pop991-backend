@@ -14,9 +14,22 @@ def lambda_handler(event, context):
     response = table.get_item(Key={'user_id': principal_id})
     item = response.get('Item')
     if item:
-        return {'balance': item.get('balance')}
+        return {
+            'body': json.dumps({
+                'balance': item.get('balance'),
+            }),
+            'statusCode': 200,
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Credentials': "true",
+            }
+        }
     else:
         return {
             'statusCode': 404,
-            'body': json.dumps({'message': 'User not found', event: event})
+            'body': json.dumps({'message': 'User not found', event: event}),
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Credentials': "true",
+            }
         }
