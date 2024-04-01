@@ -42,7 +42,11 @@ def lambda_handler(event, context):
             'statusCode': 200,
             'body': json.dumps({
                 'token': jwt_token
-            })
+            }),
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Credentials': "true",
+            }
         }
 
     except ClientError as e:
