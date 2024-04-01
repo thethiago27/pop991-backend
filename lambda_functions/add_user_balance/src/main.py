@@ -1,4 +1,6 @@
 import json
+import os
+
 import boto3
 import logging
 
@@ -6,6 +8,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 dynamodb = boto3.resource('dynamodb')
+sns = boto3.client('sns')
 balance_table = dynamodb.Table('balance')
 invoices_table = dynamodb.Table('invoices')
 
@@ -39,6 +42,27 @@ def lambda_handler(event, context):
             "statusCode": 500,
             "body": json.dumps({"message": "Internal Server Error"})
         }
+
+
+def notify_transaction(amount, user_id):
+    sns.publish(
+        TopicArn=os.getenv('sns_transaction_topic_arn'),
+        MessageAttributes={
+            'amount': {
+                'DataType': 'Number',
+                'StringValue': amount
+            },
+            'user_id': {
+                'DataType': 'String',
+                'StringValue': user_id
+            },
+            'type': {
+                'DataType': 'String',
+                'StringValue': 'withdraw'
+            }
+        },
+        Message="Transaction registered successfully"
+    )
 
 
 def deposit_balance(user_id, amount):
