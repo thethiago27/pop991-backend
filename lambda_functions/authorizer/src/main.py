@@ -1,18 +1,25 @@
+import logging
 import os
 import jwt
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 
 def lambda_handler(event, context):
     if 'Authorization' not in event['headers']:
+        logger.info("Auth header not found")
         return generate_policy('user', 'Deny', event['methodArn'])
 
     authorization_header = event['headers']['Authorization']
     token = None
 
     if authorization_header.startswith('Bearer '):
+        logger.info("Error no auth")
         token = authorization_header.split(' ')[1]
 
     if not token:
+        logger.info("Token n encontrado")
         return generate_policy('user', 'Deny', event['methodArn'])
 
     try:
