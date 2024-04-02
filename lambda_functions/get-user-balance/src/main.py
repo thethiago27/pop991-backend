@@ -18,7 +18,7 @@ def lambda_handler(event, context):
         return {
             'statusCode': 200,
             'body': json.dumps({
-                'balance': Decimal(item.get('balance')),
+                'balance': float(item.get('balance')),  # Convert Decimal to float
             }),
             'headers': {
                 'Access-Control-Allow-Origin': '*',
@@ -28,7 +28,7 @@ def lambda_handler(event, context):
     else:
         return {
             'statusCode': 404,
-            'body': json.dumps({'message': 'User not found', event: event}),
+            'body': json.dumps({'message': 'User not found', 'event': event}),  # Fix the event representation
             'headers': {
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Credentials': "true",
