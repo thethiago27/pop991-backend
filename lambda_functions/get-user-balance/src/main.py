@@ -1,4 +1,5 @@
 import json
+from decimal import Decimal
 
 import boto3
 
@@ -17,8 +18,8 @@ def lambda_handler(event, context):
         return {
             'statusCode': 200,
             'body': json.dumps({
-                'balance': item.get('balance'),
-            }),
+                'balance': Decimal(item.get('balance')),
+            }, use_decimal=True),
             'headers': {
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Credentials': "true",
