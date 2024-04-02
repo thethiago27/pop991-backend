@@ -31,6 +31,7 @@ def lambda_handler(event, context):
 
         deposit_balance(user_id, amount)
         update_invoice_status(invoice_id)
+        notify_transaction(amount, user_id)
 
         return {
             "statusCode": 200,
