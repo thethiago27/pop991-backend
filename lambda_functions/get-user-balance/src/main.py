@@ -5,7 +5,6 @@ import boto3
 
 
 def lambda_handler(event, context):
-
     dynamodb = boto3.resource('dynamodb')
 
     print(context)
@@ -16,14 +15,7 @@ def lambda_handler(event, context):
     item = response.get('Item')
     if item:
         return {
-            'statusCode': 200,
-            'body': json.dumps({
-                'balance': float(item.get('balance')),  # Convert Decimal to float
-            }),
-            'headers': {
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Credentials': "true",
-            }
+            'balance': float(item.get('balance')),  # Convert Decimal to float
         }
     else:
         return {
