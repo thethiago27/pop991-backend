@@ -19,7 +19,7 @@ def lambda_handler(event, context):
             'statusCode': 200,
             'body': json.dumps({
                 'balance': Decimal(item.get('balance')),
-            }, use_decimal=True),
+            }),
             'headers': {
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Credentials': "true",
