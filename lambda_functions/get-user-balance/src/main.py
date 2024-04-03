@@ -15,7 +15,11 @@ def lambda_handler(event, context):
     item = response.get('Item')
     if item:
         return {
-            'balance': float(item.get('balance'))
+            'balance': float(item.get('balance')),
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Credentials': "true",
+            }
         }
     else:
         return {
