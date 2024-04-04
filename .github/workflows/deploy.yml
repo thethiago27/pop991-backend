@@ -35,7 +35,15 @@ jobs:
           python-version: '3.9'
           cache: 'pip'
 
+      - name: Check for code changes
+        id: check_changes
+        run: |
+          cd lambda_functions/${{matrix.lambda}}
+          git diff --quiet || echo "::set-output name=changed::true"
+        continue-on-error: true
+
       - name: Zip And Install Lambda functions
+        if: steps.check_changes.outputs.changed == 'true'
         run: |
           cd lambda_functions/${{matrix.lambda}}
           pip install -r requirements.txt -t .
@@ -49,6 +57,7 @@ jobs:
           aws-region: us-east-1
 
       - name: Update Lambdas code
+        if: steps.check_changes.outputs.changed == 'true'
         run: aws lambda update-function-code --function-name=${{matrix.lambda}} --zip-file=fileb://lambda_functions/${{matrix.lambda}}/${{matrix.lambda}}.zip
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
