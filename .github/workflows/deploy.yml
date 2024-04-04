@@ -50,6 +50,7 @@ jobs:
           zip -r ${{matrix.lambda}}.zip .
 
       - name: Set up AWS Credentials
+        if: steps.check_changes.outputs.changed == 'true'
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
