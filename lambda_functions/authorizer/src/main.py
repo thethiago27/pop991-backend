@@ -7,10 +7,6 @@ logger.setLevel(logging.INFO)
 
 
 def lambda_handler(event, context):
-    if 'Authorization' not in event['headers']:
-        logger.info("Auth header not found")
-        return generate_policy('user', 'Deny', event['methodArn'])
-
     authorization_header = event['headers']['Authorization']
     token = None
 
