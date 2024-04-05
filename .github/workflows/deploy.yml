@@ -19,49 +19,35 @@ jobs:
           directories=$(tree lambda_functions -d -L 1 -J | jq -j -c '.[0].contents | map(.name)')
           echo ::set-output name=lambdas::${directories}
 
-  cache-lambdas-functions:
+  update-code:
     needs: get-filenames
     strategy:
       matrix:
         lambda: ${{ fromJson(needs.get-filenames.outputs.lambdaArray) }}
     runs-on: ubuntu-latest
-    steps:
-      - name: Create SHA256 hash
-        id: hash
-        run: |
-          echo "::set-output name=hash::$(echo ${{ hashFiles('lambda_functions/${{matrix.lambda}}') }} | sha256sum | cut -d ' ' -f 1)"
-      - name: Cache Lambda functions
-        uses: actions/cache@v3
-        env:
-          cache-name: cache-lambdas-functions-hash-${{ matrix.lambda }}
-        with:
-          path: ~/lambda_functions/${{matrix.lambda}}
-          key: ${{ runner.os }}-lambda-${{matrix.lambda}}-${{ steps.hash.outputs.hash }}
-          restore-keys: |
-            ${{ runner.os }}-lambda-${{matrix.lambda}}-
-            ${{ runner.os }}-lambda-
-            ${{ runner.os }}-
+    outputs:
+        sha256: ${{ steps.create-sha256.outputs.sha256 }}
 
-  update-code:
-    needs: [get-filenames, cache-lambdas-functions]
-    strategy:
-      matrix:
-        lambda: ${{ fromJson(needs.get-filenames.outputs.lambdaArray) }}
-    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Create SHA256 hash
+        id: create-sha256
+        run: |
+          echo "Creating SHA256 hash for ${{ matrix.lambda }}"
+          echo "sha256=${{ hashFiles('lambda_functions/${{ matrix.lambda }}') }}" >> "$GITHUB_OUTPUT"
+
+      - name: Get cached sha256
+        id: get-cached-sha256
+        run: |
+          if [ -f "$GITHUB_ENV" ]; then
+            source "$GITHUB_ENV"
+          fi
+          echo "Cached sha256: $sha256"
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.9'
           cache: 'pip'
-
-      - if: ${{ needs.cache-lambdas-functions.outputs.cache-hit != 'true' }}
-        name: Install dependencies
-        run: |
-          cd lambda_functions/${{matrix.lambda}}
-          pip install -r requirements.txt -t .
-
-
