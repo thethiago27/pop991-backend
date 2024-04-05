@@ -63,8 +63,5 @@ jobs:
         with:
           path: ~/${{ runner.os }}-sha256-${{ matrix.lambda }}
           key: ${{ runner.os }}-sha256-${{ matrix.lambda }}
-          restore-keys: |
-            ${{ runner.os }}-sha256-${{ matrix.lambda }}
-            
 
 
