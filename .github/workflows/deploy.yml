@@ -35,9 +35,12 @@ jobs:
         env:
           cache-name: cache-lambdas-functions-hash-${{ matrix.lambda }}
         with:
-          path: lambda_functions/${{matrix.lambda}}
+          path: ~/lambda_functions/${{matrix.lambda}}
           key: ${{ runner.os }}-lambda-${{matrix.lambda}}-${{ steps.hash.outputs.hash }}
-          restore-keys: ${{ runner.os }}-lambda-${{matrix.lambda}}-
+          restore-keys: |
+            ${{ runner.os }}-lambda-${{matrix.lambda}}-
+            ${{ runner.os }}-lambda-
+            ${{ runner.os }}-
 
   update-code:
     needs: [get-filenames, cache-lambdas-functions]
