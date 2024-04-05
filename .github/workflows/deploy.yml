@@ -56,7 +56,7 @@ jobs:
           python-version: '3.9'
           cache: 'pip'
 
-      - if: $ {{ needs.cache-lambdas-functions.outputs.cache-hit != 'true' }}
+      - if: ${{ needs.cache-lambdas-functions.outputs.cache-hit != 'true' }}
         name: Install dependencies
         run: |
           cd lambda_functions/${{matrix.lambda}}
