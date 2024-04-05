@@ -21,20 +21,27 @@ jobs:
 
   cache-lambdas-functions:
     needs: get-filenames
+    strategy:
+      matrix:
+        lambda: ${{ fromJson(needs.get-filenames.outputs.lambdaArray) }}
     runs-on: ubuntu-latest
     steps:
       - name: Create SHA256 hash
         id: hash
-        run: echo "::set-output name=hash::$(echo ${{ hashFiles('**/*.py') }} | sha256sum | awk '{print $1}')"
+        run: |
+          cd lambda_functions/${{matrix.lambda}}
+          echo "::set-output name=hash::$(echo ${{ hashFiles('**/*.py') }} | sha256sum | awk '{print $1}')"
       - name: Cache Lambda functions
         uses: actions/cache@v3
+        env:
+          cache-name: cache-lambdas-functions-hash-${{ matrix.lambda }}
         with:
-          path: lambda_functions
-          key: ${{ runner.os }}-lambda-functions-${{ steps.hash.outputs.hash }}
-          restore-keys: ${{ runner.os }}-lambda-functions-
+          path: lambda_functions/${{matrix.lambda}}
+          key: ${{ runner.os }}-lambda-${{matrix.lambda}}-${{ steps.hash.outputs.hash }}
+          restore-keys: ${{ runner.os }}-lambda-${{matrix.lambda}}-
 
   update-code:
-    needs: get-filenames
+    needs: [get-filenames, cache-lambdas-functions]
     strategy:
       matrix:
         lambda: ${{ fromJson(needs.get-filenames.outputs.lambdaArray) }}
@@ -49,24 +56,10 @@ jobs:
           python-version: '3.9'
           cache: 'pip'
 
-      - name: Zip And Install Lambda functions
+      - if: $ {{ needs.cache-lambdas-functions.outputs.cache-hit != 'true' }}
+        name: Install dependencies
         run: |
           cd lambda_functions/${{matrix.lambda}}
           pip install -r requirements.txt -t .
-          zip -r ${{matrix.lambda}}.zip .
 
-      - name: Create New SHA256 hash
-        id: new_hash
-        run: echo "::set-output name=hash::$(echo ${{ hashFiles('**/*.py') }} | sha256sum | awk '{print $1}')"
 
-      - name: Compare Hashes and Deploy if Different
-        run: |
-          if [ "${{ steps.hash.outputs.hash }}" != "${{ steps.new_hash.outputs.hash }}" ]; then
-            aws lambda update-function-code --function-name=${{matrix.lambda}} --zip-file=fileb://lambda_functions/${{matrix.lambda}}/${{matrix.lambda}}.zip
-          else
-            echo "No changes in code. Skipping deployment."
-          fi
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: us-east-1
