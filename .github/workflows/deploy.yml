@@ -19,6 +19,20 @@ jobs:
           directories=$(tree lambda_functions -d -L 1 -J | jq -j -c '.[0].contents | map(.name)')
           echo ::set-output name=lambdas::${directories}
 
+  cache-lambdas-functions:
+    needs: get-filenames
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create SHA256 hash
+        id: hash
+        run: echo "::set-output name=hash::$(echo ${{ hashFiles('**/*.py') }} | sha256sum | awk '{print $1}')"
+      - name: Cache Lambda functions
+        uses: actions/cache@v3
+        with:
+          path: lambda_functions
+          key: ${{ runner.os }}-lambda-functions-${{ steps.hash.outputs.hash }}
+          restore-keys: ${{ runner.os }}-lambda-functions-
+
   update-code:
     needs: get-filenames
     strategy:
@@ -35,28 +49,23 @@ jobs:
           python-version: '3.9'
           cache: 'pip'
 
-      - name: Check for code changes
-        id: check_changes
-        run: |
-          cd lambda_functions/${{matrix.lambda}}
-          git diff --quiet || echo "::set-output name=changed::true"
-        continue-on-error: true
-
       - name: Zip And Install Lambda functions
         run: |
           cd lambda_functions/${{matrix.lambda}}
           pip install -r requirements.txt -t .
           zip -r ${{matrix.lambda}}.zip .
 
-      - name: Set up AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+      - name: Create New SHA256 hash
+        id: new_hash
+        run: echo "::set-output name=hash::$(echo ${{ hashFiles('**/*.py') }} | sha256sum | awk '{print $1}')"
 
-      - name: Update Lambdas code
-        run: aws lambda update-function-code --function-name=${{matrix.lambda}} --zip-file=fileb://lambda_functions/${{matrix.lambda}}/${{matrix.lambda}}.zip
+      - name: Compare Hashes and Deploy if Different
+        run: |
+          if [ "${{ steps.hash.outputs.hash }}" != "${{ steps.new_hash.outputs.hash }}" ]; then
+            aws lambda update-function-code --function-name=${{matrix.lambda}} --zip-file=fileb://lambda_functions/${{matrix.lambda}}/${{matrix.lambda}}.zip
+          else
+            echo "No changes in code. Skipping deployment."
+          fi
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
