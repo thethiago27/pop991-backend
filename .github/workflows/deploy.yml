@@ -26,7 +26,7 @@ jobs:
         lambda: ${{ fromJson(needs.get-filenames.outputs.lambdaArray) }}
     runs-on: ubuntu-latest
     outputs:
-        sha256: ${{ steps.create-sha256.outputs.sha256 }}
+      sha256: ${{ steps.create-sha256.outputs.sha256 }}
 
     steps:
       - name: Checkout repository
@@ -51,3 +51,20 @@ jobs:
         with:
           python-version: '3.9'
           cache: 'pip'
+
+      - if: steps.get-cached-sha256.outputs.sha256 != steps.create-sha256.outputs.sha256
+        name: Update Lambda Function
+        run: |
+          echo "Updating ${{ matrix.lambda }}"
+
+      - name: Cache sha256
+        id: cache-sha256
+        uses: actions/cache@v3
+        with:
+          path: ~/${{ runner.os }}-sha256-${{ matrix.lambda }}
+          key: ${{ runner.os }}-sha256-${{ matrix.lambda }}
+          restore-keys: |
+            ${{ runner.os }}-sha256-${{ matrix.lambda }}
+            
+
+
