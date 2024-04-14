@@ -19,7 +19,11 @@ def lambda_handler(event, context):
                 'statusCode': 401,
                 'body': json.dumps({
                     'message': 'Email or password invalid'
-                })
+                }),
+                'headers': {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Credentials': "true",
+                }
             }
 
         user = response['Item']
@@ -29,7 +33,11 @@ def lambda_handler(event, context):
                 'statusCode': 401,
                 'body': json.dumps({
                     'message': 'Email or password invalid'
-                })
+                }),
+                'headers': {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Credentials': "true",
+                }
             }
 
         payload = {
