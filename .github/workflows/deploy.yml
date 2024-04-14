@@ -25,26 +25,9 @@ jobs:
       matrix:
         lambda: ${{ fromJson(needs.get-filenames.outputs.lambdaArray) }}
     runs-on: ubuntu-latest
-    outputs:
-      sha256: ${{ steps.create-sha256.outputs.sha256 }}
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Create SHA256 hash
-        id: create-sha256
-        run: |
-          echo "Creating SHA256 hash for ${{ matrix.lambda }}"
-          echo "sha256=${{ hashFiles('lambda_functions/${{ matrix.lambda }}') }}" >> "$GITHUB_OUTPUT"
-
-      - name: Get cached sha256
-        id: get-cached-sha256
-        run: |
-          if [ -f "$GITHUB_ENV" ]; then
-            source "$GITHUB_ENV"
-          fi
-          echo "Cached sha256: $sha256"
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -52,16 +35,22 @@ jobs:
           python-version: '3.9'
           cache: 'pip'
 
-      - if: steps.get-cached-sha256.outputs.sha256 != steps.create-sha256.outputs.sha256
-        name: Update Lambda Function
+      - name: Zip And Install Lambda functions
         run: |
-          echo "Updating ${{ matrix.lambda }}"
+          cd lambda_functions/${{matrix.lambda}}
+          pip install -r requirements.txt -t .
+          zip -r ${{matrix.lambda}}.zip .
 
-      - name: Cache sha256
-        id: cache-sha256
-        uses: actions/cache@v3
+      - name: Set up AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          path: ~/${{ runner.os }}-sha256-${{ matrix.lambda }}
-          key: ${{ runner.os }}-sha256-${{ matrix.lambda }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
 
-
+      - name: Update Lambdas code
+        run: aws lambda update-function-code --function-name=${{matrix.lambda}} --zip-file=fileb://lambda_functions/${{matrix.lambda}}/${{matrix.lambda}}.zip
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: us-east-1
