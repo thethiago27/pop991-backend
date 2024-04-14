@@ -7,26 +7,34 @@ logger.setLevel(logging.INFO)
 
 
 def lambda_handler(event, context):
-    authorization_header = event['headers']['Authorization']
-    token = None
-
-    if authorization_header.startswith('Bearer '):
-        logger.info("Error no auth")
-        token = authorization_header.split(' ')[1]
-
-    if not token:
-        logger.info("Token n encontrado")
-        return generate_policy('user', 'Deny', event['methodArn'])
-
     try:
-        is_authorized = jwt.decode(token, os.getenv('jwt_secret'), algorithms=['HS256'])
+        authorization_header = event.get('headers', {}).get('Authorization')
 
-        if 'user_id' in is_authorized:
-            return generate_policy(is_authorized['user_id'], 'Allow', event['methodArn'])
-        else:
+        if not authorization_header or not authorization_header.startswith('Bearer '):
+            logger.info("Token não encontrado na solicitação")
             return generate_policy('user', 'Deny', event['methodArn'])
 
-    except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
+        token = authorization_header.split(' ')[1]
+
+        try:
+            is_authorized = jwt.decode(token, os.getenv('jwt_secret'), algorithms=['HS256'])
+
+            if 'user_id' in is_authorized:
+                return generate_policy(is_authorized['user_id'], 'Allow', event['methodArn'])
+            else:
+                logger.info("ID do usuário não encontrado no token")
+                return generate_policy('user', 'Deny', event['methodArn'])
+
+        except jwt.ExpiredSignatureError:
+            logger.info("Token expirado")
+            return generate_policy('user', 'Deny', event['methodArn'])
+
+        except jwt.InvalidTokenError:
+            logger.error("Token inválido")
+            return generate_policy('user', 'Deny', event['methodArn'])
+
+    except Exception as e:
+        logger.error(f"Erro inesperado: {str(e)}")
         return generate_policy('user', 'Deny', event['methodArn'])
 
 
