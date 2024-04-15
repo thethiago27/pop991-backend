@@ -11,7 +11,7 @@ def lambda_handler(event, context):
         authorization_header = event['headers']['Authorization']
 
         if not authorization_header:
-            logger.info("Cabeçalho de autorização não encontrado", event['headers'])
+            logger.info("Cabeçalho de autorização não encontrado", event)
             return generate_policy('user', 'Deny', event['methodArn'])
 
         token = authorization_header.split(' ')[1]
