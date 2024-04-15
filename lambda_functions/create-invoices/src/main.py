@@ -9,7 +9,7 @@ def lambda_handler(event, context):
     user_id = event.get('principalId')
     qr_code_id, qr_code_payload = create_pix_code(amount)
     save_invoice(amount, qr_code_id, qr_code_payload, user_id)
-    notify_transaction(amount, event["principalId"])
+    notify_transaction(amount, user_id)
 
     return {
         'qr_code_id': qr_code_id,
