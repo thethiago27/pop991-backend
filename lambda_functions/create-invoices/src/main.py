@@ -47,7 +47,7 @@ def notify_transaction(amount, user_id):
                 'StringValue': user_id
             },
             'type': {
-                'DataType': 'Number',
+                'DataType': 'String',
                 'StringValue': 'deposit'
             }
         },
