@@ -6,8 +6,9 @@ import requests
 
 def lambda_handler(event, context):
     amount = event.get('amount')
+    user_id = event.get('principalId')
     qr_code_id, qr_code_payload = create_pix_code(amount)
-    save_invoice(amount, qr_code_id, qr_code_payload, event["principalId"])
+    save_invoice(amount, qr_code_id, qr_code_payload, user_id)
     notify_transaction(amount, event["principalId"])
 
     return {
@@ -39,7 +40,7 @@ def notify_transaction(amount, user_id):
         TopicArn=os.getenv('sns_transaction_topic_arn'),
         MessageAttributes={
             'amount': {
-                'DataType': 'Number',
+                'DataType': 'String',
                 'StringValue': amount
             },
             'user_id': {
