@@ -6,6 +6,7 @@ import requests
 
 
 def lambda_handler(event, context):
+    event = json.loads(event['body'])
     amount = event.get('amount')
     user_id = event.get('principalId')
     qr_code_id, qr_code_payload = create_pix_code(amount)
@@ -13,6 +14,7 @@ def lambda_handler(event, context):
     notify_transaction(amount, user_id)
 
     return {
+        'statusCode': 200,
         'qr_code_id': qr_code_id,
         'qr_code_payload': qr_code_payload
     }
