@@ -1,3 +1,4 @@
+import json
 import os
 from datetime import datetime, timedelta
 import boto3
@@ -36,23 +37,16 @@ def save_invoice(amount, qr_code_id, qr_code_payload, user_id):
 
 def notify_transaction(amount, user_id):
     sns = boto3.client('sns')
+
+    content = json.dumps({
+        'amount': amount,
+        'user_id': user_id,
+        'type': 'deposit'
+    })
+
     sns.publish(
         TopicArn=os.getenv('sns_transaction_topic_arn'),
-        MessageAttributes={
-            'amount': {
-                'DataType': 'String',
-                'StringValue': amount
-            },
-            'user_id': {
-                'DataType': 'String',
-                'StringValue': user_id
-            },
-            'type': {
-                'DataType': 'String',
-                'StringValue': 'deposit'
-            }
-        },
-        Message="Transaction registered successfully"
+        Message=content
     )
 
 
