@@ -8,6 +8,7 @@ def lambda_handler(event, context):
     amount = event.get('amount')
     qr_code_id, qr_code_payload = create_pix_code(amount)
     save_invoice(amount, qr_code_id, qr_code_payload, event["principalId"])
+    notify_transaction(amount, event["principalId"])
 
     return {
         'qr_code_id': qr_code_id,
@@ -30,6 +31,28 @@ def save_invoice(amount, qr_code_id, qr_code_payload, user_id):
     }
 
     table.put_item(Item=item)
+
+
+def notify_transaction(amount, user_id):
+    sns = boto3.client('sns')
+    sns.publish(
+        TopicArn=os.getenv('sns_transaction_topic_arn'),
+        MessageAttributes={
+            'amount': {
+                'DataType': 'Number',
+                'StringValue': amount
+            },
+            'user_id': {
+                'DataType': 'String',
+                'StringValue': user_id
+            },
+            'type': {
+                'DataType': 'String',
+                'StringValue': 'deposit'
+            }
+        },
+        Message="Transaction registered successfully"
+    )
 
 
 def create_pix_code(amount):
