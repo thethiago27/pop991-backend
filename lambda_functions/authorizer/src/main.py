@@ -8,10 +8,10 @@ logger.setLevel(logging.INFO)
 
 def lambda_handler(event, context):
     try:
-        authorization_header = event.get('headers', {}).get('Authorization')
+        authorization_header = event['headers']['Authorization']
 
         if not authorization_header:
-            logger.info("Cabeçalho de autorização não encontrado")
+            logger.info("Cabeçalho de autorização não encontrado", event['headers'])
             return generate_policy('user', 'Deny', event['methodArn'])
 
         token = authorization_header.split(' ')[1]
