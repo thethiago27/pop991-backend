@@ -26,7 +26,7 @@ def notify_transaction(amount, user_id):
         TopicArn=os.getenv('sns_transaction_topic_arn'),
         MessageAttributes={
             'amount': {
-                'DataType': 'Number',
+                'DataType': 'String',
                 'StringValue': amount
             },
             'user_id': {
