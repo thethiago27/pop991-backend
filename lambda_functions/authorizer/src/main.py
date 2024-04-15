@@ -9,7 +9,7 @@ logger.setLevel(logging.INFO)
 def lambda_handler(event, context):
     try:
         logger.info(event)
-        authorization_header = event['headers']['Authorization']
+        authorization_header = event['headers']['authorization']
 
         if not authorization_header:
             logger.info("Cabeçalho de autorização não encontrado", event)
