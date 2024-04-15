@@ -8,6 +8,7 @@ logger.setLevel(logging.INFO)
 
 def lambda_handler(event, context):
     try:
+        logger.info(event)
         authorization_header = event['headers']['Authorization']
 
         if not authorization_header:
