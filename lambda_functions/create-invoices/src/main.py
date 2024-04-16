@@ -41,7 +41,7 @@ def save_invoice(amount, qr_code_id, qr_code_payload, user_id):
 
 
 def notify_transaction(amount, user_id):
-    sns = boto3.client('sns')
+    sns = boto3.client('sqs')
 
     content = json.dumps({
         'amount': amount,
@@ -49,9 +49,9 @@ def notify_transaction(amount, user_id):
         'type': 'deposit'
     })
 
-    sns.publish(
-        TopicArn=os.getenv('sns_transaction_topic_arn'),
-        Message=content
+    sns.send_message(
+        QueueUrl=os.getenv('transaction_queue_url'),
+        MessageBody=content
     )
 
 
